@@ -6,11 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.minhldn.appmusic.data.network.ApiService
 import com.minhldn.appmusic.databinding.FragmentExploreBinding
 import com.minhldn.appmusic.presentation.adapter.SongAdapter
+import com.minhldn.appmusic.presentation.viewmodel.SongViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,11 +23,14 @@ import kotlinx.coroutines.withContext
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
+@AndroidEntryPoint
 class ExploreFragment : Fragment() {
 
     private var _binding: FragmentExploreBinding? = null
     private val binding get() = _binding!!
     private val apiService = ApiService.create()
+
+    private val viewModel: SongViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,7 +46,11 @@ class ExploreFragment : Fragment() {
 
         initView()
 
-        fetchSongs()
+        viewModel.songs.observe(viewLifecycleOwner){
+            binding.rvExplore.adapter = SongAdapter(it)
+        }
+
+        viewModel.fetchSongs()
     }
 
     private fun initView() {

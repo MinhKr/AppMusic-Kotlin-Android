@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.androidx.fragment.ktx)
     implementation (libs.androidx.lifecycle.runtime.ktx)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)

@@ -10,12 +10,15 @@ interface ApiService {
     suspend fun getSongs(): List<Song>
 
     companion object {
+
+        const val baseUrl = "https://m.vuiz.net/getlink/mp3zing/"
         fun create(): ApiService {
-            return Retrofit.Builder()
-                .baseUrl("https://m.vuiz.net/getlink/mp3zing/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(ApiService::class.java)
+            return retrofit.create(ApiService::class.java)
         }
+
+        private val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
 }

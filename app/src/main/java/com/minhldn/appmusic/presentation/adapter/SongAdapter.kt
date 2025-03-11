@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.minhldn.appmusic.R
 import com.minhldn.appmusic.data.model.Song
 import com.minhldn.appmusic.databinding.ItemSongBinding
 
@@ -26,7 +25,7 @@ class SongAdapter(private val songs: List<Song>) :
         holder.binding.song = song
 
         Glide.with(holder.itemView.context).load(song.thumbnail).into(holder.binding.imgThumbnail)
-        }
+    }
 
     override fun getItemCount() = songs.size
 }

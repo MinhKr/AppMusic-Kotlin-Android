@@ -11,7 +11,9 @@ import com.minhldn.appmusic.presentation.fragment.explore.ExploreFragment
 import com.minhldn.appmusic.presentation.fragment.favorite.FavoriteSongFragment
 import com.minhldn.appmusic.presentation.fragment.language.LanguageFragment
 import com.minhldn.appmusic.presentation.fragment.mymusic.MyMusicFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
