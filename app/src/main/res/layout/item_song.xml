@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="song"
+            type="com.minhldn.appmusic.data.model.Song" />
+    </data>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp">
+
+            <ImageView
+                android:id="@+id/imgThumbnail"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:scaleType="centerCrop"
+                tools:src="@drawable/img_test" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/txtSongName"
+            style="@style/base_font_20"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAlignment="center"
+            android:text="@{song.nameSong}"
+            tools:text="minh"/>
+
+        <TextView
+            android:id="@+id/txtArtistName"
+            style="@style/base_font_14_gray"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:text="@{song.artistName}"
+            tools:text="Minh"
+            />
+    </LinearLayout>
+
+</layout>

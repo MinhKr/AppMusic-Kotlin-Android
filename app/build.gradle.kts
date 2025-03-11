@@ -41,6 +41,10 @@ android {
 }
 
 dependencies {
+    implementation (libs.androidx.lifecycle.runtime.ktx)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.room.runtime)

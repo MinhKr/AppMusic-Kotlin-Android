@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+    <item
+        android:id="@+id/nav_explore"
+        android:icon="@drawable/ic_explore"
+        android:title="@string/explore" />
+    <item
+        android:id="@+id/nav_my_music"
+        android:icon="@drawable/ic_user"
+        android:title="@string/my_music" />
+    <item
+        android:id="@+id/nav_favorite"
+        android:icon="@drawable/ic_heart"
+        android:title="@string/favorite_songs" />
+    <item
+        android:id="@+id/nav_language"
+        android:icon="@drawable/ic_explore"
+        android:title="@string/language" />
+
+</menu>
