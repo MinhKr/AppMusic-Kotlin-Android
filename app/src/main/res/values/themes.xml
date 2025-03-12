@@ -25,4 +25,18 @@
         <item name="android:fontFamily">@font/roboto</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="font_medium_24" parent="font_medium">
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="font_medium" parent="base_font">
+        <item name="fontFamily">@font/roboto</item>
+    </style>
+
+    <style name="base_font">
+        <item name="android:textColor">@color/font_color</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
 </resources>

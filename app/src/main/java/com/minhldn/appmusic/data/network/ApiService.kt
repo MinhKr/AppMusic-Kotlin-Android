@@ -11,13 +11,13 @@ interface ApiService {
 
     companion object {
 
-        const val baseUrl = "https://m.vuiz.net/getlink/mp3zing/"
+        private const val BASE_URL = "https://m.vuiz.net/getlink/mp3zing/"
         fun create(): ApiService {
             return retrofit.create(ApiService::class.java)
         }
 
         private val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

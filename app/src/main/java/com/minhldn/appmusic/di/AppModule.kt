@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    val baseUrl = "https://m.vuiz.net/getlink/mp3zing/"
+    private const val BASE_URL = "https://m.vuiz.net/getlink/mp3zing/"
 
     @Provides
     @Singleton
@@ -26,7 +26,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit = Retrofit.Builder()
-        .baseUrl(baseUrl)
+        .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
