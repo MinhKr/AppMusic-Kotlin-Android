@@ -1,9 +1,11 @@
 package com.minhldn.appmusic.presentation
 
+import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -16,12 +18,14 @@ import com.minhldn.appmusic.data.model.Song
 import com.minhldn.appmusic.databinding.ActivityDetailBinding
 import com.minhldn.appmusic.presentation.viewmodel.SongViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.URLDecoder
 
 @AndroidEntryPoint
 class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
     private val viewModel: SongViewModel by viewModels()
     private var mediaPlayer: MediaPlayer? = null
+    private var isPrepared = false
     private var isPlaying = false
     private val handler = Handler(Looper.getMainLooper())
 
@@ -41,11 +45,11 @@ class DetailActivity : AppCompatActivity() {
         }
 
         val song = intent.getSerializableExtra("song") as? Song
-        song?.let { 
+        song?.let {
             setupUI(it)
             viewModel.setCurrentSong(it)
         }
-        
+
         setupObservers()
         setupClickListeners()
     }
@@ -66,23 +70,58 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun setupMediaPlayer(url: String) {
-        mediaPlayer?.release()
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(url)
-            prepareAsync()
-            setOnPreparedListener {
-                binding.detailPlaying.ivPlayPause.isEnabled = true
-                startUpdateSeekbar()
+        try {
+
+            val decodedUrl = URLDecoder.decode(url.replace("\\", ""), "UTF-8")
+            mediaPlayer?.release()
+            mediaPlayer = null
+
+            mediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+
+                setDataSource(decodedUrl)
+
+                binding.detailPlaying.ivPlayPause.isEnabled = false
+
+                setOnPreparedListener { mp ->
+                    isPrepared = true
+                    binding.detailPlaying.ivPlayPause.isEnabled = true
+                    playMusic()
+                }
+
+                setOnCompletionListener {
+                    isPrepared = false
+                    this@DetailActivity.isPlaying = false
+                    binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_play)
+                }
+
+                setOnErrorListener { mp, what, extra ->
+                    Log.e("MediaPlayer", "Error: $what, extra: $extra")
+                    isPrepared = false
+                    this@DetailActivity.isPlaying = false
+                    binding.detailPlaying.ivPlayPause.isEnabled = false
+                    Toast.makeText(
+                        this@DetailActivity,
+                        "Không thể phát bài hát này (Error: $what)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    true
+                }
+
+                prepareAsync()
             }
-            setOnCompletionListener {
-                this@DetailActivity.isPlaying = false
-                binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_play)
-                handler.removeCallbacksAndMessages(null)
-            }
-            setOnErrorListener { _, _, _ ->
-                Toast.makeText(this@DetailActivity, "Không thể phát bài hát này", Toast.LENGTH_SHORT).show()
-                true
-            }
+        } catch (e: Exception) {
+            Log.e("MediaPlayer", "Error setting up MediaPlayer", e)
+            Toast.makeText(
+                this,
+                "Lỗi khởi tạo player: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -100,8 +139,13 @@ class DetailActivity : AppCompatActivity() {
                 }
             }
 
-            detailPlaying.seekSpeed.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            detailPlaying.seekSpeed.setOnSeekBarChangeListener(object :
+                SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
                     if (fromUser) {
                         mediaPlayer?.seekTo(progress)
                     }
@@ -114,15 +158,29 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun playMusic() {
-        mediaPlayer?.start()
-        isPlaying = true
-        binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_pause)
+        if (isPrepared && !isPlaying) {
+            try {
+                mediaPlayer?.start()
+                isPlaying = true
+                binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_pause)
+                startUpdateSeekbar()
+            } catch (e: Exception) {
+                Log.e("MediaPlayer", "Error playing", e)
+                Toast.makeText(this, "Lỗi khi phát nhạc: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun pauseMusic() {
-        mediaPlayer?.pause()
-        isPlaying = false
-        binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_play)
+        if (isPrepared && isPlaying) {
+            try {
+                mediaPlayer?.pause()
+                isPlaying = false
+                binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_play)
+            } catch (e: Exception) {
+                Log.e("MediaPlayer", "Error pausing", e)
+            }
+        }
     }
 
     private fun startUpdateSeekbar() {
@@ -147,10 +205,18 @@ class DetailActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
-        mediaPlayer?.apply {
-            stop()
-            release()
+        try {
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
+            }
+            mediaPlayer = null
+            isPrepared = false
+            isPlaying = false
+        } catch (e: Exception) {
+            Log.e("MediaPlayer", "Error releasing MediaPlayer", e)
         }
-        mediaPlayer = null
     }
 }

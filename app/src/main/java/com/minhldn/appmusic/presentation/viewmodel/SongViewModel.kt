@@ -21,7 +21,7 @@ class SongViewModel @Inject constructor(
     val currentSong: LiveData<Song> = _currentSong
 
     private val _streamUrl = MutableLiveData<String?>()
-    val streamUrl: MutableLiveData<String?> = _streamUrl
+    val streamUrl: LiveData<String?> = _streamUrl
 
     fun fetchSongs() {
         viewModelScope.launch {
@@ -36,22 +36,14 @@ class SongViewModel @Inject constructor(
 
     fun setCurrentSong(song: Song) {
         _currentSong.value = song
-        // Lấy ID từ link của bài hát
-        val songId = extractSongId(song.url)
-        loadStreamUrl(songId)
+        loadStreamUrl(song.link)
     }
 
-    private fun extractSongId(link: String): String {
-        // Link format: "/bai-hat/Ten-Bai-Hat/ID.html"
-        return link.substringAfterLast("/").substringBefore(".html")
-    }
-
-    private fun loadStreamUrl(songId: String) {
+    private fun loadStreamUrl(songUrl: String) {
         viewModelScope.launch {
             try {
-                // Xây dựng URL stream từ ID bài hát
-                val streamUrl = "https://api-zingmp3.vercel.app/api/song/streaming/$songId"
-                _streamUrl.value = streamUrl
+                val url = songRepository.getSongStream(songUrl)
+                _streamUrl.value = url
             } catch (e: Exception) {
                 _streamUrl.value = null
             }
