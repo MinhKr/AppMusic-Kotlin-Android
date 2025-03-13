@@ -42,6 +42,7 @@ android {
 
 dependencies {
     implementation(libs.material.v110beta01)
+    implementation (libs.androidx.media)
     implementation (libs.androidx.lifecycle.viewmodel.ktx)
     implementation (libs.androidx.fragment.ktx)
     implementation (libs.androidx.lifecycle.runtime.ktx)

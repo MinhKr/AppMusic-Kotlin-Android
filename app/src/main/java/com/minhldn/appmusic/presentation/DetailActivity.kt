@@ -1,7 +1,9 @@
 package com.minhldn.appmusic.presentation
 
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.minhldn.appmusic.R
 import com.minhldn.appmusic.data.model.Song
 import com.minhldn.appmusic.databinding.ActivityDetailBinding
+import com.minhldn.appmusic.presentation.service.MediaService
 import com.minhldn.appmusic.presentation.viewmodel.SongViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.URLDecoder
@@ -71,7 +74,6 @@ class DetailActivity : AppCompatActivity() {
 
     private fun setupMediaPlayer(url: String) {
         try {
-
             val decodedUrl = URLDecoder.decode(url.replace("\\", ""), "UTF-8")
             mediaPlayer?.release()
             mediaPlayer = null
@@ -85,12 +87,27 @@ class DetailActivity : AppCompatActivity() {
                 )
 
                 setDataSource(decodedUrl)
-
                 binding.detailPlaying.ivPlayPause.isEnabled = false
 
                 setOnPreparedListener { mp ->
                     isPrepared = true
                     binding.detailPlaying.ivPlayPause.isEnabled = true
+
+                    val serviceIntent = Intent(this@DetailActivity, MediaService::class.java)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(serviceIntent)
+                    } else {
+                        startService(serviceIntent)
+                    }
+
+                    viewModel.currentSong.value?.let { song ->
+                        Intent(this@DetailActivity, MediaService::class.java).also { intent ->
+                            intent.action = "UPDATE_SONG"
+                            intent.putExtra("song", song)
+                            startService(intent)
+                        }
+                    }
+
                     playMusic()
                 }
 
@@ -117,11 +134,7 @@ class DetailActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("MediaPlayer", "Error setting up MediaPlayer", e)
-            Toast.makeText(
-                this,
-                "Lỗi khởi tạo player: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(this, "Lỗi khởi tạo player: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -164,6 +177,15 @@ class DetailActivity : AppCompatActivity() {
                 isPlaying = true
                 binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_pause)
                 startUpdateSeekbar()
+
+                Intent(this, MediaService::class.java).also { intent ->
+                    intent.action = MediaService.ACTION_PLAY
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent)
+                    } else {
+                        startService(intent)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("MediaPlayer", "Error playing", e)
                 Toast.makeText(this, "Lỗi khi phát nhạc: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -177,6 +199,15 @@ class DetailActivity : AppCompatActivity() {
                 mediaPlayer?.pause()
                 isPlaying = false
                 binding.detailPlaying.ivPlayPause.setImageResource(R.drawable.ic_play)
+
+                Intent(this, MediaService::class.java).also { intent ->
+                    intent.action = MediaService.ACTION_PAUSE
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent)
+                    } else {
+                        startService(intent)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("MediaPlayer", "Error pausing", e)
             }
@@ -215,6 +246,8 @@ class DetailActivity : AppCompatActivity() {
             mediaPlayer = null
             isPrepared = false
             isPlaying = false
+
+            stopService(Intent(this, MediaService::class.java))
         } catch (e: Exception) {
             Log.e("MediaPlayer", "Error releasing MediaPlayer", e)
         }
